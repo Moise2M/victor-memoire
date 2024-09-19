@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 COPY . /app/
 RUN python manage.py migrate
 EXPOSE 80
-CMD ["gunicorn", "memoire.wsgi:application", "--bind", "0.0.0.0:80"]
+#CMD ["gunicorn", "memoire.wsgi:application", "--bind", "0.0.0.0:80"]

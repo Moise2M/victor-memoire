@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - django_network
+
+  web:
+    image: badabonmoise/memoire-d:latest
+    container_name: django_app
+    command: gunicorn memoire.wsgi:application --bind 0.0.0.0:80
+    ports:
+      - "80:80"
+    # env_file:
+    #   - .env
+    depends_on:
+      - db
+    networks:
+      - django_network
+
+volumes:
+  postgres_data:
+
+networks:
+  django_network:
+    driver: bridge

@@ -1,0 +1,91 @@
+name: Continuous Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # Job 1 : Création du fichier .env
+  create-env-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Create .env file
+        run: |
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.prod
+          echo "DEBUG=${{ secrets.DEBUG }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.prod
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env.prod
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.prod
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env.prod
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.prod
+# env file for docker compose
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env     
+    
+      - name: Upload docker-compose.yml and env fileto Scaleway
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          source: "docker-compose.yml, .env.prod,"
+          target: '/home/ubuntu/victor-memoire'
+
+
+
+      - name: copy env file
+        run: sudo cp .env.prod victor-memoire/
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      # Étape 3 : Construire l'image Docker de l'application
+      - name: Build the Docker image
+        run: docker build -t badabonmoise/memoire-d:latest .
+
+      # Étape 5 : Pousser l'image Docker sur Docker Hub
+      - name: Push Docker image
+        run: docker push badabonmoise/memoire-d:latest
+
+
+
+
+
+  # Job 3 : Déploiement de l'Application sur le Serveur
+  deploy-application:
+    # needs: [push-code]
+    needs: [create-env-file]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Étape 1 : Connexion SSH pour déployer l'application
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Deploy the application
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/victor-memoire
+            # sudo docker-compose down || true
+            # sudo docker-compose rm -f || true
+            sudo docker pull badabonmoise/memoire-d:latest
+            sudo docker compose -f docker-compose.yml down
+            sudo docker compose -f docker-compose.yml up -d
+            sudo rm .env
+          
+
+
+
