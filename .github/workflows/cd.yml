@@ -13,7 +13,6 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
-
       - name: Create .env file
         run: |
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.prod
