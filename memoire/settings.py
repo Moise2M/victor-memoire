@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env.bool("DEBUG", False)
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['18.205.244.131']
 
 
 # Application definition
