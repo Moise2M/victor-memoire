@@ -64,7 +64,7 @@ jobs:
   # Job 3 : Déploiement de l'Application sur le Serveur
   deploy-application:
     # needs: [push-code]
-    needs: [create-depot-env-file-Docker-image]
+    needs: [create-depot-env-file-Docker-imag]
     runs-on: ubuntu-latest
 
     steps:
