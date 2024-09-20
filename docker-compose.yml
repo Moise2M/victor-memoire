@@ -1,11 +1,12 @@
 version: '3.8'
 
 services:
+# Premier service db pour la base de donnees postgres
   db:
     image: postgres:14
     container_name: postgres_db
     environment:
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: ${DB_NAME} #prend la valeur DB_NAME dans le fichier .env
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -21,8 +22,6 @@ services:
     command: gunicorn memoire.wsgi:application --bind 0.0.0.0:80
     ports:
       - "80:80"
-    # env_file:
-    #   - .env
     depends_on:
       - db
     networks:

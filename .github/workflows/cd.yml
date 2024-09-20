@@ -7,14 +7,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Job 1 : Création du fichier .env
-  create-env-file:
+  # Job 1 : Création des fichier d'environement et constuction/push(depot) de l'image django sur docker hub  
+  create/depot-env-file-Docker-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
-
-      - name: Create .env file
+# env file for django app
+      - name: Create .env.prod file
         run: |
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env.prod
           echo "DEBUG=${{ secrets.DEBUG }}" >> .env
@@ -29,8 +29,8 @@ jobs:
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env     
-    
-      - name: Upload docker-compose.yml and env fileto Scaleway
+# envoie des fichier neccesaire pour demarer les conteneur sur le serveur
+      - name: Upload docker-compose.yml and env file in server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
@@ -40,10 +40,10 @@ jobs:
           target: '/home/ubuntu/victor-memoire'
 
 
-
+# copie du fichier .env.prod necessaire pour l'app django dans le repertoire memoire/
       - name: copy env file
         run: sudo mv .env.prod memoire/
-
+# connection au registry docker hub pour deposer l'image 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -64,7 +64,7 @@ jobs:
   # Job 3 : Déploiement de l'Application sur le Serveur
   deploy-application:
     # needs: [push-code]
-    needs: [create-env-file]
+    needs: [create/depot-env-file-Docker-image]
     runs-on: ubuntu-latest
 
     steps:
@@ -81,12 +81,11 @@ jobs:
           port: 22
           script: |
             cd /home/ubuntu/victor-memoire
-            # sudo docker-compose down || true
-            # sudo docker-compose rm -f || true
             sudo docker pull badabonmoise/memoire-d:latest
             sudo docker compose -f docker-compose.yml down
             sudo docker compose -f docker-compose.yml up -d
             sudo rm .env
+            sudo rm .env.prod
           
 
 
