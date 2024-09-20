@@ -8,7 +8,7 @@ on:
 
 jobs:
   # Job 1 : Création des fichier d'environement et constuction/push(depot) de l'image django sur docker hub  
-  create/depot-env-file-Docker-image:
+  create-depot-env-file-Docker-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
@@ -64,7 +64,7 @@ jobs:
   # Job 3 : Déploiement de l'Application sur le Serveur
   deploy-application:
     # needs: [push-code]
-    needs: [create/depot-env-file-Docker-image]
+    needs: [create-depot-env-file-Docker-image]
     runs-on: ubuntu-latest
 
     steps:
