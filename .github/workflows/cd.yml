@@ -64,7 +64,7 @@ jobs:
   # Job 3 : Déploiement de l'Application sur le Serveur
   deploy-application:
     # needs: [push-code]
-    needs: [create-depot-env-file-Docker-imag]
+    needs: [create-depot-env-file-Docker-image]
     runs-on: ubuntu-latest
 
     steps:
@@ -76,7 +76,7 @@ jobs:
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
-          username: ${{ secrets.AWS_EC2_USER }}
+          username: ${{ secrets.AWS_EC2_USE }}
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           port: 22
           script: |
